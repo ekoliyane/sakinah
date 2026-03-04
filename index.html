@@ -113,20 +113,32 @@
                 <div id="insight-panel" class="glass rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 h-full flex flex-col min-h-[400px]">
                     
                     <!-- INITIAL INFO SCREEN -->
-                    <div id="insight-empty" class="flex-1 flex flex-col animate-in fade-in duration-700">
+                    <div id="insight-empty" class="flex-1 flex flex-col animate-in fade-in duration-700 overflow-y-auto hide-scrollbar">
+                        <!-- TENTANG APLIKASI SECARA UMUM -->
+                        <div class="mb-8">
+                            <h3 class="text-xl font-bold text-teal-400 mb-4 flex items-center gap-2">
+                                <i data-lucide="sparkles" class="w-5 h-5"></i> Tentang Sakinah
+                            </h3>
+                            <div class="bg-white/5 p-6 rounded-[1.5rem] border border-white/5 space-y-4 text-sm text-slate-300 leading-relaxed">
+                                <p><strong>Sakinah</strong> (سكينة) bermakna ketenangan lahir dan batin. Aplikasi ini dirancang sebagai pendamping setia Anda di kantor, membantu mengubah suasana kerja yang penuh tekanan menjadi oase kedamaian melalui lantunan Al-Qur'an pilihan.</p>
+                                <p>Aplikasi ini mengadopsi konsep <strong>Tanpa Musik</strong> untuk menjaga kemurnian interaksi dengan kalam Ilahi, digantikan dengan suara alam (Nature White Noise) yang membantu menutupi kebisingan tanpa mengganggu konsentrasi.</p>
+                            </div>
+                        </div>
+
+                        <!-- MENGAPA URUTANNYA BEGITU -->
                         <div class="mb-8">
                             <h3 class="text-xl font-bold text-teal-400 mb-4 flex items-center gap-2">
                                 <i data-lucide="info" class="w-5 h-5"></i> Mengapa Urutannya Begitu?
                             </h3>
                             <div class="bg-white/5 p-6 rounded-[1.5rem] border border-white/5 space-y-4 text-sm text-slate-300 leading-relaxed">
-                                <p>Daftar surah dalam Sakinah disusun menggunakan <strong>Alur Psikologis (Sakinah Flow)</strong> untuk transisi gelombang otak yang optimal:</p>
+                                <p>Daftar surah disusun menggunakan <strong>Alur Psikologis (Sakinah Flow)</strong> untuk transisi gelombang otak yang optimal:</p>
                                 <ul class="space-y-3">
-                                    <li class="flex gap-3"><span class="text-teal-500 font-bold">1. Pembuka (Al-Fatihah):</span> Menenangkan detak jantung dan membangun koneksi spiritual awal.</li>
-                                    <li class="flex gap-3"><span class="text-teal-500 font-bold">2. Inti (Ar-Ra'd 28):</span> Mengunci pikiran pada dzikir untuk menghentikan kecemasan.</li>
-                                    <li class="flex gap-3"><span class="text-teal-500 font-bold">3. Relaksasi (Ar-Rahman):</span> Menggunakan ritme repetitif untuk menurunkan frekuensi otak ke gelombang Teta.</li>
-                                    <li class="flex gap-3"><span class="text-teal-500 font-bold">4. Resolusi (Surah Pendek):</span> Memberikan kelapangan dada dan optimisme sebelum kembali fokus bekerja.</li>
+                                    <li class="flex gap-3"><span class="text-teal-500 font-bold shrink-0">1. Pembuka:</span> Menenangkan detak jantung dan membangun koneksi spiritual awal.</li>
+                                    <li class="flex gap-3"><span class="text-teal-500 font-bold shrink-0">2. Inti:</span> Mengunci pikiran pada dzikir untuk menghentikan kecemasan (Anxiety).</li>
+                                    <li class="flex gap-3"><span class="text-teal-500 font-bold shrink-0">3. Relaksasi:</span> Menggunakan irama repetitif untuk menurunkan frekuensi otak ke gelombang Teta.</li>
+                                    <li class="flex gap-3"><span class="text-teal-500 font-bold shrink-0">4. Resolusi:</span> Memberikan kelapangan dada dan optimisme sebelum kembali fokus bekerja.</li>
                                 </ul>
-                                <p class="text-[10px] text-slate-500 italic mt-4 italic text-center underline">Pilih surah di samping untuk memulai perjalanan ketenangan Anda.</p>
+                                <p class="text-[10px] text-slate-500 italic mt-4 text-center underline">Pilih surah di samping untuk memulai perjalanan ketenangan Anda.</p>
                             </div>
                         </div>
                         
@@ -363,7 +375,7 @@
 
         function updatePlayUI(playing) {
             const icon = playing ? 'pause' : 'play';
-            document.getElementById('main-play-btn').innerHTML = `<i data-lucide="\${icon}" class="w-7 h-7 sm:w-8 sm:h-8 fill-current \${playing ? '' : 'ml-1'}"></i>`;
+            document.getElementById('main-play-btn').innerHTML = `<i data-lucide="${icon}" class="w-7 h-7 sm:w-8 sm:h-8 fill-current ${playing ? '' : 'ml-1'}"></i>`;
             lucide.createIcons();
         }
 
