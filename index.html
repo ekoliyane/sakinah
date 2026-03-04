@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sakinah - Islamic Theta Relaxation</title>
+    
+    <!-- Meta Tags untuk SEO & Social Media -->
+    <meta name="description" content="Aplikasi relaksasi Islami untuk mencapai gelombang otak teta melalui lantunan Al-Qur'an pilihan tanpa musik.">
+    <meta property="og:title" content="Sakinah - Islamic Theta Relaxation">
+    <meta property="og:description" content="Tenangkan hati dan pikiran di kantor dengan lantunan Al-Qur'an penyejuk jiwa.">
+    <meta property="og:type" content="website">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Plus+Jakarta+Sans', sans-serif; 
+            background: radial-gradient(circle at top right, #0f172a, #020617);
+            color: #f1f5f9;
+            min-height: 100vh;
+            transition: background 0.5s ease;
+        }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease; }
+        
+        .theta-pulse { animation: pulse-glow 4s ease-in-out infinite; }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(20, 184, 166, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(20, 184, 166, 0.3); }
+        }
+        
+        .active-surah { border-left: 4px solid #14b8a6; background: rgba(20, 184, 166, 0.1); }
+        .scroll-custom::-webkit-scrollbar { width: 4px; }
+        .scroll-custom::-webkit-scrollbar-track { background: transparent; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: rgba(20, 184, 166, 0.2); border-radius: 10px; }
+        
+        body.battery-saver { background: #000000 !important; }
+        .battery-saver .theta-pulse { animation: none !important; box-shadow: none !important; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .battery-saver .animate-ping { animation: none !important; display: none !important; }
+        .battery-saver .glass { background: rgba(255, 255, 255, 0.01); backdrop-filter: none !important; }
+        .battery-saver #visualizer { display: none; }
+
+        @media (max-width: 640px) {
+            .player-card { padding: 1.5rem !important; }
+            h2 { font-size: 1.5rem !important; }
+        }
+    </style>
+</head>
+<body class="pb-10">
+
+    <audio id="main-audio"></audio>
+    <audio id="nature-audio" loop>
+        <source src="https://www.soundjay.com/nature/rain-01.mp3" type="audio/mpeg">
+    </audio>
+
+    <header class="p-4 sm:p-6 max-w-6xl mx-auto flex justify-between items-center border-b border-white/5 mb-4 sm:mb-8">
+        <div>
+            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent uppercase">SAKINAH</h1>
+            <p class="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold italic">Islamic Theta Relaxation</p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="toggleBatterySaver()" id="battery-btn" class="glass p-2.5 sm:p-3 rounded-2xl text-slate-400 hover:text-amber-400 transition-all flex flex-col items-center">
+                <i data-lucide="battery-medium" id="battery-icon" class="w-5 h-5"></i>
+                <span class="text-[8px] mt-1 font-bold">Hemat</span>
+            </button>
+            <button onclick="toggleSleepTimer()" id="timer-btn" class="glass p-2.5 sm:p-3 rounded-2xl text-slate-400 hover:text-teal-400 transition-all flex flex-col items-center">
+                <i data-lucide="timer" class="w-5 h-5"></i>
+                <span id="timer-display" class="text-[8px] mt-1 hidden font-bold">Off</span>
+            </button>
+            <button onclick="toggleAmbient()" id="ambient-btn" class="glass p-2.5 sm:p-3 rounded-2xl text-slate-400 hover:text-teal-400 transition-all flex flex-col items-center">
+                <i data-lucide="cloud-rain" class="w-5 h-5"></i>
+                <span class="text-[8px] mt-1 font-bold">Alam</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="flex flex-col lg:grid lg:grid-cols-12 gap-6 sm:gap-8">
+            <div class="lg:col-span-5 space-y-6">
+                <!-- PLAYER CARD -->
+                <div class="player-card glass rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 text-center theta-pulse relative overflow-hidden">
+                    <div id="visualizer" class="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
+                        <div class="w-48 h-48 sm:w-64 sm:h-64 border border-teal-500 rounded-full animate-ping"></div>
+                    </div>
+                    <p id="current-category" class="text-[9px] font-black text-teal-500 uppercase tracking-widest mb-4 italic">Ketenangan Murni</p>
+                    <h2 id="display-name" class="text-2xl sm:text-3xl font-bold mb-6 text-white">Pilih Surah</h2>
+                    <div class="flex justify-center items-center gap-4 sm:gap-6 relative z-10">
+                        <button onclick="toggleRepeat()" id="repeat-btn" class="text-slate-500 hover:text-teal-400 p-2"><i data-lucide="repeat" id="repeat-icon" class="w-5 h-5"></i></button>
+                        <button onclick="handlePrev()" class="text-slate-500 hover:text-white p-2"><i data-lucide="skip-back" class="w-6 h-6"></i></button>
+                        <button onclick="togglePlay()" id="main-play-btn" class="w-16 h-16 sm:w-20 sm:h-20 bg-teal-500 rounded-full flex items-center justify-center text-slate-900 shadow-xl shadow-teal-500/20 active:scale-95 transition-all"><i data-lucide="play" class="w-7 h-7 sm:w-8 sm:h-8 fill-current ml-1"></i></button>
+                        <button onclick="handleNext()" class="text-slate-500 hover:text-white p-2"><i data-lucide="skip-forward" class="w-6 h-6"></i></button>
+                        <button onclick="resetToInfo()" class="text-slate-500 hover:text-teal-400 p-2"><i data-lucide="help-circle" class="w-5 h-5"></i></button>
+                    </div>
+                    <div class="mt-8">
+                        <div class="h-1.5 bg-white/5 rounded-full overflow-hidden w-full cursor-pointer relative" onclick="seek(event)">
+                            <div id="progress-bar" class="h-full bg-teal-500 w-0 transition-all duration-300"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- PLAYLIST -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between px-2">
+                        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Daftar Putar</h3>
+                        <span id="active-repeat-label" class="text-[8px] bg-teal-500/10 text-teal-500 px-2 py-1 rounded-md uppercase font-bold tracking-tighter">Repeat All</span>
+                    </div>
+                    <div id="playlist-container" class="space-y-2 max-h-[350px] lg:max-h-[500px] overflow-y-auto pr-1 scroll-custom"></div>
+                </div>
+            </div>
+
+            <!-- INSIGHT / INFO PANEL -->
+            <div class="lg:col-span-7" id="insight-section">
+                <div id="insight-panel" class="glass rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 h-full flex flex-col min-h-[400px]">
+                    
+                    <!-- INITIAL INFO SCREEN -->
+                    <div id="insight-empty" class="flex-1 flex flex-col animate-in fade-in duration-700">
+                        <div class="mb-8">
+                            <h3 class="text-xl font-bold text-teal-400 mb-4 flex items-center gap-2">
+                                <i data-lucide="info" class="w-5 h-5"></i> Mengapa Urutannya Begitu?
+                            </h3>
+                            <div class="bg-white/5 p-6 rounded-[1.5rem] border border-white/5 space-y-4 text-sm text-slate-300 leading-relaxed">
+                                <p>Daftar surah dalam Sakinah disusun menggunakan <strong>Alur Psikologis (Sakinah Flow)</strong> untuk transisi gelombang otak yang optimal:</p>
+                                <ul class="space-y-3">
+                                    <li class="flex gap-3"><span class="text-teal-500 font-bold">1. Pembuka (Al-Fatihah):</span> Menenangkan detak jantung dan membangun koneksi spiritual awal.</li>
+                                    <li class="flex gap-3"><span class="text-teal-500 font-bold">2. Inti (Ar-Ra'd 28):</span> Mengunci pikiran pada dzikir untuk menghentikan kecemasan.</li>
+                                    <li class="flex gap-3"><span class="text-teal-500 font-bold">3. Relaksasi (Ar-Rahman):</span> Menggunakan ritme repetitif untuk menurunkan frekuensi otak ke gelombang Teta.</li>
+                                    <li class="flex gap-3"><span class="text-teal-500 font-bold">4. Resolusi (Surah Pendek):</span> Memberikan kelapangan dada dan optimisme sebelum kembali fokus bekerja.</li>
+                                </ul>
+                                <p class="text-[10px] text-slate-500 italic mt-4 italic text-center underline">Pilih surah di samping untuk memulai perjalanan ketenangan Anda.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="glass p-5 rounded-2xl text-center">
+                                <i data-lucide="zap" class="w-5 h-5 mx-auto mb-2 text-teal-500"></i>
+                                <h4 class="text-xs font-bold text-white mb-1 uppercase">Gelombang Teta</h4>
+                                <p class="text-[10px] text-slate-400">Kondisi relaksasi mendalam dan kreativitas tinggi.</p>
+                            </div>
+                            <div class="glass p-5 rounded-2xl text-center">
+                                <i data-lucide="battery-medium" class="w-5 h-5 mx-auto mb-2 text-amber-500"></i>
+                                <h4 class="text-xs font-bold text-white mb-1 uppercase">Hemat Baterai</h4>
+                                <p class="text-[10px] text-slate-400">Matikan animasi visual untuk penggunaan jangka panjang.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACTIVE SURAH CONTENT -->
+                    <div id="insight-content" class="hidden flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 lg:slide-in-from-right-4 duration-500">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="bg-teal-500/10 text-teal-400 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider" id="insight-tag">Insight</span>
+                            <div class="h-px flex-1 bg-white/5"></div>
+                        </div>
+
+                        <h3 class="text-xl sm:text-2xl font-bold text-white mb-6" id="insight-title">Nama Surah</h3>
+                        
+                        <div class="space-y-8 overflow-y-auto pr-2 scroll-custom flex-1 pb-4">
+                            <section class="border-l-2 border-teal-500/30 pl-4 py-1">
+                                <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Terjemahan Penuh</h4>
+                                <div id="insight-meaning" class="text-slate-300 leading-relaxed text-sm sm:text-base space-y-4 whitespace-pre-line italic"></div>
+                            </section>
+                            <section>
+                                <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Manfaat & Hikmah</h4>
+                                <p class="text-slate-400 leading-relaxed text-sm" id="insight-reason"></p>
+                            </section>
+                            <section class="bg-teal-500/5 p-5 rounded-3xl border border-teal-500/10 saver-hide">
+                                <h4 class="text-[10px] font-black text-teal-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                                    <i data-lucide="zap" class="w-3 h-3"></i> Efek Terapi Otak
+                                </h4>
+                                <p class="text-slate-400 text-xs sm:text-sm leading-relaxed" id="insight-theta"></p>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- TIMER MODAL -->
+    <div id="timer-modal" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-6">
+        <div class="glass bg-slate-900 p-8 rounded-[2rem] w-full max-w-xs text-center border border-teal-500/20 shadow-2xl">
+            <h3 class="text-lg font-bold mb-6 text-white text-center">Setel Sleep Timer</h3>
+            <div class="grid grid-cols-1 gap-3">
+                <button onclick="setTimer(15)" class="p-4 rounded-2xl bg-white/5 hover:bg-teal-500 hover:text-slate-900 transition-all font-bold text-white">15 Menit</button>
+                <button onclick="setTimer(30)" class="p-4 rounded-2xl bg-white/5 hover:bg-teal-500 hover:text-slate-900 transition-all font-bold text-white">30 Menit</button>
+                <button onclick="setTimer(60)" class="p-4 rounded-2xl bg-white/5 hover:bg-teal-500 hover:text-slate-900 transition-all font-bold text-white">60 Menit</button>
+                <button onclick="setTimer(0)" class="p-4 rounded-2xl bg-rose-500/20 text-rose-400 font-bold mt-2 text-center">Matikan Timer</button>
+            </div>
+            <button onclick="toggleSleepTimer()" class="mt-6 text-slate-500 text-sm mx-auto block">Batal</button>
+        </div>
+    </div>
+
+    <script>
+        const surahs = [
+            { 
+                no: 1, name: "Al-Fatihah", title: "Surah Al-Fatihah", 
+                meaning: `1. Dengan nama Allah Yang Maha Pengasih lagi Maha Penyayang.
+2. Segala puji bagi Allah, Tuhan semesta alam.
+3. Yang Maha Pengasih lagi Maha Penyayang.
+4. Pemilik hari pembalasan.
+5. Hanya kepada-Mulah kami menyembah dan hanya kepada-Mulah kami mohon pertolongan.
+6. Tunjukkanlah kami jalan yang lurus.
+7. (Yaitu) jalan orang-orang yang telah Engkau beri nikmat kepada mereka; bukan (jalan) mereka yang dimurkai dan bukan (pula jalan) mereka yang sesat.`, 
+                reason: "Dikenal sebagai 'As-Syifa' (Penyembuh). Membacanya membantu menstabilkan detak jantung dan memberikan pondasi spiritual sebelum bekerja.",
+                theta: "Memicu kondisi penyerahan diri (surrender) yang menurunkan hormon stres kortisol secara signifikan.",
+                category: "The Healing", audio: "https://server8.mp3quran.net/afs/001.mp3" 
+            },
+            { 
+                no: 13, name: "Ar-Ra'd 28", title: "Ar-Ra'd Ayat 28", 
+                meaning: `"(Yaitu) orang-orang yang beriman dan hati mereka menjadi tenteram dengan mengingat Allah. Ingatlah, hanya dengan mengingat Allah hati menjadi tenteram." (QS. 13:28)`, 
+                reason: "Ayat kunci dalam manajemen stres Islami. Menegaskan bahwa ketenangan sejati berasal dari dzikir kepada Allah.",
+                theta: "Fokus pada ayat ini membantu sinkronisasi gelombang otak kiri dan kanan, menciptakan kejernihan (Clarity).",
+                category: "Anxiety Relief", audio: "https://server8.mp3quran.net/afs/013.mp3" 
+            },
+            { 
+                no: 55, name: "Ar-Rahman", title: "Surah Ar-Rahman", 
+                meaning: `1. (Allah) Yang Maha Pengasih.
+2. Yang telah mengajarkan Al-Qur'an.
+3. Dia menciptakan manusia.
+4. Mengajarnya pandai berbicara...
+... Maka nikmat Tuhanmu yang manakah yang kamu dustakan?`, 
+                reason: "Memiliki ritme repetisi yang sangat menenangkan. Pola bunyinya menciptakan resonansi yang menstabilkan sistem saraf.",
+                theta: "Irama Ar-Rahman adalah yang paling sering digunakan dalam terapi Qur'an untuk insomnia dan depresi.",
+                category: "Brain Therapy", audio: "https://server8.mp3quran.net/afs/055.mp3" 
+            },
+            { 
+                no: 2, name: "Ayat Kursi", title: "Al-Baqarah 255", 
+                meaning: `"Allah, tidak ada Tuhan melainkan Dia Yang Hidup kekal lagi terus menerus mengurus (makhluk-Nya)..."`, 
+                reason: "Membangun 'Benteng Mental'. Memberikan rasa aman bahwa ada kekuatan Maha Besar yang mengawasi segala urusan kita.",
+                theta: "Mengalihkan otak dari 'Survival Mode' (Amigdala) ke 'Rest Mode' melalui sugesti perlindungan.",
+                category: "Protection", audio: "https://server8.mp3quran.net/afs/002.mp3" 
+            },
+            { 
+                no: 94, name: "Al-Insyirah", title: "Surah Al-Insyirah", 
+                meaning: `1. Bukankah Kami telah melapangkan untukmu dadamu?
+2. Dan Kami telah menghilangkan darimu bebanmu...
+5. Karena sesungguhnya sesudah kesulitan itu ada kemudahan.`, 
+                reason: "Memberikan harapan dan kelapangan dada seketika bagi siapa saja yang merasa sedang dalam tekanan berat.",
+                theta: "Membuka hambatan mental melalui pesan optimisme ganda untuk memicu kreativitas gelombang Teta.",
+                category: "Relief", audio: "https://server8.mp3quran.net/afs/094.mp3" 
+            },
+            { 
+                no: 93, name: "Ad-Duha", title: "Surah Ad-Duha", 
+                meaning: `3. Tuhanmu tidak meninggalkanmu dan tidak (pula) benci kepadamu...
+5. Dan kelak Tuhanmu pasti memberikan karunia-Nya kepadamu, lalu (hati) kamu menjadi puas.`, 
+                reason: "Sangat baik untuk 'burnout'. Memberikan rasa diperhatikan dan tidak dibenci oleh Sang Pencipta.",
+                theta: "Frekuensi suara yang lembut membantu menenangkan pikiran yang sedang terlalu kritis terhadap diri sendiri.",
+                category: "Deep Comfort", audio: "https://server8.mp3quran.net/afs/093.mp3" 
+            },
+            { 
+                no: 18, name: "Al-Kahf 1-10", title: "Al-Kahf 1-10", 
+                meaning: `10. (Ingatlah) tatkala para pemuda itu mencari tempat berlindung ke dalam gua...`, 
+                reason: "Menjaga kejernihan pikiran dari pengaruh lingkungan yang toksik. Memberikan ketenangan di tengah hiruk pikuk.",
+                theta: "Membantu mencapai konsentrasi 'Deep Work' dengan menutup distraksi eksternal melalui narasi perlindungan.",
+                category: "Peace of Mind", audio: "https://server8.mp3quran.net/afs/018.mp3" 
+            },
+            { 
+                no: 67, name: "Al-Mulk 1-10", title: "Al-Mulk 1-10", 
+                meaning: `1. Maha Suci Allah Yang di tangan-Nyalah segala kerajaan...`, 
+                reason: "Memberikan perspektif makro tentang kehidupan, membuat masalah kecil di kantor terasa lebih ringan.",
+                theta: "Ideal didengarkan di akhir hari kerja untuk proses 'detoks' pikiran sebelum beristirahat.",
+                category: "Deep Focus", audio: "https://server8.mp3quran.net/afs/067.mp3" 
+            }
+        ];
+
+        let currentIdx = -1;
+        let repeatMode = 'all'; 
+        let ambientActive = false;
+        let isBatterySaver = false;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        
+        const mainAudio = document.getElementById('main-audio');
+        const natureAudio = document.getElementById('nature-audio');
+
+        function init() {
+            renderPlaylist();
+            lucide.createIcons();
+            mainAudio.ontimeupdate = () => {
+                if(mainAudio.duration) {
+                    const pct = (mainAudio.currentTime / mainAudio.duration) * 100;
+                    document.getElementById('progress-bar').style.width = pct + '%';
+                }
+            };
+            mainAudio.onended = () => {
+                if (repeatMode === 'one') {
+                    mainAudio.currentTime = 0;
+                    mainAudio.play();
+                } else {
+                    handleNext();
+                }
+            };
+        }
+
+        function resetToInfo() {
+            document.getElementById('insight-content').classList.add('hidden');
+            document.getElementById('insight-empty').classList.remove('hidden');
+            currentIdx = -1;
+            renderPlaylist();
+        }
+
+        function toggleBatterySaver() {
+            isBatterySaver = !isBatterySaver;
+            document.body.classList.toggle('battery-saver', isBatterySaver);
+            const btn = document.getElementById('battery-btn');
+            const icon = document.getElementById('battery-icon');
+            if (isBatterySaver) {
+                btn.classList.add('text-amber-400', 'bg-amber-400/10');
+                icon.setAttribute('data-lucide', 'battery-low');
+            } else {
+                btn.classList.remove('text-amber-400', 'bg-amber-400/10');
+                icon.setAttribute('data-lucide', 'battery-medium');
+            }
+            lucide.createIcons();
+        }
+
+        function renderPlaylist() {
+            const container = document.getElementById('playlist-container');
+            container.innerHTML = surahs.map((s, idx) => `
+                <div onclick="playSurah(${idx})" class="glass p-4 rounded-2xl flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all group ${currentIdx === idx ? 'active-surah' : ''}">
+                    <div class="flex items-center gap-4">
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-500 group-hover:bg-teal-500 group-hover:text-slate-900 transition-colors">
+                            ${s.no}
+                        </div>
+                        <div>
+                            <h4 class="text-[11px] sm:text-xs font-bold text-slate-200">${s.name}</h4>
+                            <p class="text-[8px] text-teal-500 font-bold uppercase tracking-widest opacity-60">${s.category}</p>
+                        </div>
+                    </div>
+                    <i data-lucide="${currentIdx === idx ? 'volume-2' : 'play'}" class="w-4 h-4 ${currentIdx === idx ? 'text-teal-400 animate-pulse' : 'text-slate-700'}"></i>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function playSurah(idx) {
+            currentIdx = idx;
+            const s = surahs[idx];
+            mainAudio.src = s.audio;
+            mainAudio.play();
+            
+            document.getElementById('display-name').innerText = s.name;
+            document.getElementById('current-category').innerText = s.category;
+            
+            document.getElementById('insight-empty').classList.add('hidden');
+            document.getElementById('insight-content').classList.remove('hidden');
+            document.getElementById('insight-title').innerText = s.title;
+            document.getElementById('insight-meaning').innerText = s.meaning;
+            document.getElementById('insight-reason').innerText = s.reason;
+            document.getElementById('insight-theta').innerText = s.theta;
+            document.getElementById('insight-tag').innerText = s.category;
+            
+            updatePlayUI(true);
+            renderPlaylist();
+            lucide.createIcons();
+        }
+
+        function togglePlay() {
+            if (currentIdx === -1) { playSurah(0); return; }
+            if (mainAudio.paused) mainAudio.play();
+            else mainAudio.pause();
+            updatePlayUI(!mainAudio.paused);
+        }
+
+        function updatePlayUI(playing) {
+            const icon = playing ? 'pause' : 'play';
+            document.getElementById('main-play-btn').innerHTML = `<i data-lucide="\${icon}" class="w-7 h-7 sm:w-8 sm:h-8 fill-current \${playing ? '' : 'ml-1'}"></i>`;
+            lucide.createIcons();
+        }
+
+        function handleNext() {
+            let next = currentIdx + 1;
+            if (next >= surahs.length) next = 0;
+            playSurah(next);
+        }
+
+        function handlePrev() {
+            let prev = currentIdx - 1;
+            if (prev < 0) prev = surahs.length - 1;
+            playSurah(prev);
+        }
+
+        function toggleRepeat() {
+            repeatMode = (repeatMode === 'all') ? 'one' : 'all';
+            const iconEl = document.getElementById('repeat-icon');
+            const labelEl = document.getElementById('active-repeat-label');
+            if(repeatMode === 'one') {
+                iconEl.setAttribute('data-lucide', 'repeat-1');
+                labelEl.innerText = 'Repeat One';
+                document.getElementById('repeat-btn').classList.add('text-teal-400');
+            } else {
+                iconEl.setAttribute('data-lucide', 'repeat');
+                labelEl.innerText = 'Repeat All';
+                document.getElementById('repeat-btn').classList.remove('text-teal-400');
+            }
+            lucide.createIcons();
+        }
+
+        function toggleAmbient() {
+            ambientActive = !ambientActive;
+            if (ambientActive) { natureAudio.volume = 0.15; natureAudio.play(); } 
+            else { natureAudio.pause(); }
+            document.getElementById('ambient-btn').classList.toggle('text-teal-400', ambientActive);
+        }
+
+        function toggleSleepTimer() { document.getElementById('timer-modal').classList.toggle('hidden'); }
+
+        function setTimer(minutes) {
+            clearInterval(timerInterval);
+            const display = document.getElementById('timer-display');
+            const btn = document.getElementById('timer-btn');
+            if (minutes === 0) {
+                timerSeconds = 0; display.classList.add('hidden'); btn.classList.remove('text-teal-400');
+            } else {
+                timerSeconds = minutes * 60;
+                display.classList.remove('hidden'); display.innerText = minutes + 'm'; btn.classList.add('text-teal-400');
+                timerInterval = setInterval(() => {
+                    timerSeconds--;
+                    if (timerSeconds <= 0) {
+                        mainAudio.pause(); natureAudio.pause(); clearInterval(timerInterval);
+                        display.innerText = "Off"; updatePlayUI(false);
+                    } else { display.innerText = Math.ceil(timerSeconds / 60) + 'm'; }
+                }, 1000);
+            }
+            toggleSleepTimer();
+        }
+
+        function seek(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const width = rect.width;
+            const pct = x / width;
+            if (mainAudio.duration) { mainAudio.currentTime = pct * mainAudio.duration; }
+        }
+
+        function scrollToInsight() { document.getElementById('insight-section').scrollIntoView({ behavior: 'smooth' }); }
+        window.onload = init;
+    </script>
+</body>
+</html>
